@@ -1,6 +1,6 @@
 import { ErrorMapper } from "utils/ErrorMapper";
-import { RoleManager } from 'lib/RoleManager';
-import { SpawnManager } from 'lib/SpawnManager';
+import { RoleManager } from "lib/RoleManager";
+import { SpawnManager, SpawnTargets } from "lib/SpawnManager";
 
 declare global {
   /*
@@ -17,11 +17,20 @@ declare global {
     log: any;
   }
 
+  interface SpawnMemory {
+    totals: SpawnTargets;
+  }
+
   interface CreepMemory {
     role: string;
     room: string;
     working: boolean;
-    upgrading: boolean
+    upgrading: boolean;
+    building: boolean;
+  }
+
+  interface HarvesterMemory extends CreepMemory {
+   resourceNode: Source
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
@@ -32,16 +41,23 @@ declare global {
   }
 }
 
-const roleManager = new RoleManager()
-const spawnManager = new SpawnManager({"harvesters": 2, "builders": 0, "upgraders": 1})
+const spawnTargets: SpawnTargets = { harvesters: 2, haulers: 1, builders: 3, upgraders: 3 };
+
+const roleManager = new RoleManager();
+const spawnManager = new SpawnManager();
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  //console.log(`Current game tick is ${Game.time}`);
-  spawnManager.run()
+  spawnManager.run();
 
-  for(const c in Game.creeps){
-    roleManager.run(Game.creeps[c])
+  let texts = 0
+  new RoomVisual().text( `Room Energy: ${Game.spawns["Spawn1"].room.energyAvailable}`, 48, 1, {align: 'right', color: "#32CD32"});
+  for(const i in spawnManager.counter) {
+    new RoomVisual().text( `${spawnManager.counter[i]}: ${i}`, 1, ++texts, {align: 'left', color: "#32CD32"});
+  }
+
+  for (const c in Game.creeps) {
+    roleManager.run(Game.creeps[c]);
   }
 
   // Automatically delete memory of missing creeps
@@ -50,4 +66,5 @@ export const loop = ErrorMapper.wrapLoop(() => {
       delete Memory.creeps[name];
     }
   }
+
 });
