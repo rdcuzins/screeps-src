@@ -1,0 +1,11 @@
+{
+  "pserver": {
+    "email": "someEmail@example.com",
+    "password": "notsosecret",
+    "protocol": "http",
+    "hostname": "screeps.example.com",
+    "port": "",
+    "path": "/",
+    "branch": "main"
+  }
+}
